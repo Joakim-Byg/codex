@@ -1,0 +1,10 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: codex-docs
+  namespace: codex
+spec:
+  interval: 1m
+  url: oci://localhost:5001/codex/docs
+  ref:
+    tag: latest

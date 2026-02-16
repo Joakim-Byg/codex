@@ -1,0 +1,10 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: supporting-facility-sources
+  namespace: supporting-facility
+spec:
+  interval: 1m
+  url: oci://localhost:5001/supporting-facility
+  ref:
+    tag: latest
