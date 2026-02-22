@@ -1,0 +1,42 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: dapr-charts
+  namespace: supporting-facility
+spec:
+  interval: 1h
+  url: https://dapr.github.io/helm-charts/
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dapr
+  namespace: supporting-facility
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: dapr
+      version: "1.14.x" # Pinning to a stable version for Valkey support
+      sourceRef:
+        kind: HelmRepository
+        name: dapr-charts
+        namespace: supporting-facility
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  values:
+    # High availability and specific settings for Codex
+    global:
+      logAsJson: true
+      ha:
+        enabled: false # Set to false for local KinD dev to save resources
+    dapr_operator:
+      replicas: 1
+    dapr_placement:
+      replicas: 1
+    dapr_sentry:
+      replicas: 1
+    dapr_sidecar_injector:
+      replicas: 1

@@ -15,7 +15,7 @@ await_ready() {
          --for=condition=Ready \
          -l "$label_match" \
          -n "$namespace" \
-         --timeout "${time_out}s" > /dev/null) &
+         --timeout "${time_out}s" 2>&1 > /dev/null) &
       wait_pid=$!
    else
       (sleep "$time_out") &
@@ -47,14 +47,26 @@ helm install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-opera
   --namespace supporting-facility \
   --create-namespace
 await_ready "Post-helm timeout... " "10"
-await_ready "Waiting for flux services ..." "30" "app.kubernetes.io/instance in (flux-operator)" "supporting-facility"
+await_ready "Waiting for flux services ..." "60" "app.kubernetes.io/instance in (flux-operator)" "supporting-facility"
 
 printf "\n\nSetting up flux instance...\n"
 echo "######################################"
 kubectl apply -f cluster-resources/supporting-facility/bootstrap/flux-instance.yaml
 await_ready "Setup load timeout... " "10"
-await_ready "Waiting for flux instance ..." "30" "app.kubernetes.io/part-of in (flux)" "supporting-facility"
+await_ready "Waiting for flux instance ..." "120" "app.kubernetes.io/part-of in (flux)" "supporting-facility"
 printf "\n\nDone setting up flux!\n"
 
+printf "\n\nSetting up ValKey...\n"
+echo "######################################"
+kubectl apply -f https://github.com/hyperspike/valkey-operator/releases/download/v0.0.61/install.yaml
+await_ready "Setup load timeout... " "5"
+await_ready "Waiting for ValKey controller ..." "60" "control-plane in (controller-manager)" "valkey-operator-system"
+
+kubectl apply -f cluster-resources/supporting-facility/bootstrap/valkey-config.yaml
+await_ready "Valkey cluster load timeout... " "5"
+await_ready "Waiting for ValKey cluster ..." "60" "app.kubernetes.io/component in (valkey)" "supporting-facility"
+printf "\n\nDone setting up ValKey!\n"
+
 #kubectl apply -f cluster-resources/supporting-facility/source.yaml
-kubectl apply -k cluster-resources/codex/config/.
+#kubectl apply -k cluster-resources/codex/config/.
+kubectl apply -k cluster-resources/supporting-facility/bootstrap/flux-enabled/.

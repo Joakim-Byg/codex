@@ -1,0 +1,36 @@
+apiVersion: hyperspike.io/v1
+kind: Valkey
+metadata:
+  namespace: supporting-facility
+  name: codex-valkey
+spec:
+  # the number of master nodes in the cluster
+  nodes: 1
+  # the number of replicas per master node
+  replicas: 0
+
+  volumePermissions: false
+  # the resource requests and limits for the Valkey Container
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  # boolean value to enable or disable TLS, cert-manager is required for TLS
+  tls: false
+  # Enalbe or disable external access to the Valkey Container
+  externalAccess:
+    # boolean value to enable or disable external access
+    enabled: false
+
+  anonymousAuth: true
+
+  storage:
+    spec:
+      resources:
+        requests:
+          storage: 2Gi
+      accessModes:
+        - ReadWriteOnce
